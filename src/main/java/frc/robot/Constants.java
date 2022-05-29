@@ -18,30 +18,30 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
     public static final class SwerveConstants{
-        public static final double WHEEL_DIAMETER = Units.inchesToMeters(6);
-        public static final double DRIVE_MOTOR_GEAR_RATIO = 1.0;
-        public static final double TURN_MOTOR_GEAR_RATIO = 1.0;
-        public static final double DRIVE_MOTOR_PCONVERSION = DRIVE_MOTOR_GEAR_RATIO * Math.PI * WHEEL_DIAMETER;
-        public static final double TURN_MOTOR_PCONVERSION = TURN_MOTOR_GEAR_RATIO * 2 * Math.PI;
-        public static final double DRIVE_MOTOR_VCONVERSION = DRIVE_MOTOR_PCONVERSION / 60;
-        public static final double TURN_MOTOR_VCONVERSION = TURN_MOTOR_PCONVERSION / 60;
-        public static final double KP_TURNING = 0;
+        public static final double WHEEL_DIAMETER = Units.inchesToMeters(3);
+        public static final double DRIVE_MOTOR_GEAR_RATIO = 5.25;
+        public static final double TURN_MOTOR_GEAR_RATIO = 55.965;
+        public static final double DRIVE_MOTOR_PCONVERSION = Math.PI * WHEEL_DIAMETER / (2048.0 * DRIVE_MOTOR_GEAR_RATIO);
+        public static final double TURN_MOTOR_PCONVERSION = 2 * Math.PI / TURN_MOTOR_GEAR_RATIO;
+        public static final double DRIVE_MOTOR_VCONVERSION = DRIVE_MOTOR_PCONVERSION / 60.0;
+        public static final double TURN_MOTOR_VCONVERSION = TURN_MOTOR_PCONVERSION / 60.0;
+        public static final double KP_TURNING = 1;
     
-        public static final double DRIVETRAIN_MAX_SPEED = 5;
+        public static final double DRIVETRAIN_MAX_SPEED = 5.0;
         public static final double DRIVETRAIN_MAX_ANGULAR_SPEED = 2 * 2 * Math.PI;
 
-        public static final double TELE_DRIVE_MAX_SPEED = DRIVETRAIN_MAX_SPEED / 4;
-        public static final double TELE_DRIVE_MAX_ANGULAR_SPEED = DRIVETRAIN_MAX_ANGULAR_SPEED / 4;
+        public static final double TELE_DRIVE_MAX_SPEED = DRIVETRAIN_MAX_SPEED / 3.5;
+        public static final double TELE_DRIVE_MAX_ANGULAR_SPEED = DRIVETRAIN_MAX_ANGULAR_SPEED / 2.5;
         public static final double TELE_DRIVE_MAX_ACCELERATION = 3;
         public static final double TELE_DRIVE_MAX_ANGULAR_ACCELERATION = 3;
 
-        public static final double TRACK_WIDTH = Units.inchesToMeters(21);
-        public static final double WHEEL_BASE = Units.inchesToMeters(25.5);
+        public static final double TRACK_WIDTH = Units.inchesToMeters(13.173279);
+        public static final double WHEEL_BASE = Units.inchesToMeters(11.173279);
         public static final SwerveDriveKinematics DRIVE_KINEMATICS = new SwerveDriveKinematics(
-            new Translation2d(WHEEL_BASE / 2, -TRACK_WIDTH / 2),
-            new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2),
-            new Translation2d(-WHEEL_BASE / 2, -TRACK_WIDTH / 2),
-            new Translation2d(-WHEEL_BASE / 2, TRACK_WIDTH / 2)
+            new Translation2d(-TRACK_WIDTH / 2, WHEEL_BASE / 2),
+            new Translation2d(TRACK_WIDTH / 2, WHEEL_BASE / 2),
+            new Translation2d(-TRACK_WIDTH / 2, -WHEEL_BASE / 2),
+            new Translation2d(TRACK_WIDTH / 2, -WHEEL_BASE / 2)
         );
     }
 }

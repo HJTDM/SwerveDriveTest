@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.SwerveDrive;
 import frc.robot.subsystems.Drivetrain;
@@ -24,17 +23,14 @@ public class RobotContainer {
 
   public static final Joystick joystick = new Joystick(0);
   private final JoystickButton resetHeading_12 = new JoystickButton(joystick, 12);
+  public static final XboxController controller = new XboxController(2);
+  private final JoystickButton button12 = new JoystickButton(controller, XboxController.Button.kB.value);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
-    drivetrain.setDefaultCommand(new SwerveDrive(
-      () -> -joystick.getRawAxis(1),
-      () -> joystick.getRawAxis(0),
-      () -> joystick.getRawAxis(2),
-      () -> !joystick.getRawButton(3)
-    ));
+    drivetrain.setDefaultCommand(new SwerveDrive());
   }
 
   /**
@@ -45,6 +41,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     resetHeading_12.whenPressed(() -> drivetrain.zeroHeading());
+    button12.whenPressed(() -> drivetrain.zeroHeading());
   }
 
   /**

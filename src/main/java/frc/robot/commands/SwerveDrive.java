@@ -4,11 +4,11 @@
 
 package frc.robot.commands;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
@@ -18,20 +18,14 @@ public class SwerveDrive extends CommandBase {
   /** Creates a new SwerveDrive. */
 
   private Drivetrain drivetrain = RobotContainer.drivetrain;
-  private Supplier<Double> xSpdFunction, ySpdFunction, turnSpdFunction;
-  private Supplier<Boolean> fieldOrientedFunction;
-  private SlewRateLimiter xLimiter, yLimiter, turnLimiter;
+  private double xSpeed, ySpeed, turnSpeed;
+  private boolean fieldOriented;
+  private SlewRateLimiter xLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
+  private SlewRateLimiter yLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
+  private SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ANGULAR_ACCELERATION);
 
-  public SwerveDrive(Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction, Supplier<Double> turnSpdFunction,
-          Supplier<Boolean> fieldOrientedFunction) {
+  public SwerveDrive() {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.xSpdFunction = xSpdFunction;
-    this.ySpdFunction = ySpdFunction;
-    this.turnSpdFunction = turnSpdFunction;
-    this.fieldOrientedFunction = fieldOrientedFunction;
-    xLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
-    yLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
-    turnLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ANGULAR_ACCELERATION);
     addRequirements(drivetrain);
   }
 
@@ -42,9 +36,19 @@ public class SwerveDrive extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double xSpeed = xSpdFunction.get();
-    double ySpeed = ySpdFunction.get();
-    double turnSpeed = turnSpdFunction.get();
+    // xSpeed = -RobotContainer.joystick.getRawAxis(1);
+    // ySpeed = RobotContainer.joystick.getRawAxis(0);
+    // turnSpeed = RobotContainer.joystick.getRawAxis(2);
+    // fieldOriented = !RobotContainer.joystick.getRawButton(3);
+
+    xSpeed = -RobotContainer.controller.getLeftY();
+    ySpeed = RobotContainer.controller.getLeftX();
+    turnSpeed = RobotContainer.controller.getRightX();
+    fieldOriented = !RobotContainer.controller.getRawButton(XboxController.Button.kA.value);
+
+    SmartDashboard.putNumber("Xspeed", xSpeed);
+    SmartDashboard.putNumber("Yspeed", ySpeed);
+    SmartDashboard.putNumber("Turnspeed", turnSpeed);
 
     xSpeed = Math.abs(xSpeed) > 0.1 ? xSpeed : 0;
     ySpeed = Math.abs(ySpeed) > 0.1 ? ySpeed : 0;
@@ -55,7 +59,7 @@ public class SwerveDrive extends CommandBase {
     turnSpeed = turnLimiter.calculate(turnSpeed) * Constants.SwerveConstants.TELE_DRIVE_MAX_ANGULAR_SPEED;
 
     ChassisSpeeds chassisSpeeds;
-    if(fieldOrientedFunction.get()){
+    if(fieldOriented){
       chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed, drivetrain.getHeadingRotation2d());
     }
     else{

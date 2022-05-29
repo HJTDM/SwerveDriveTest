@@ -3,8 +3,14 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -12,19 +18,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.RobotController;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveModule extends SubsystemBase {
-  private CANSparkMax driveMotor;
+  private TalonFX driveMotor;
   private CANSparkMax turnMotor;
 
-  private RelativeEncoder driveEncoder;
   private RelativeEncoder turnEncoder;
 
   private PIDController turnPIDController;
-  private AnalogInput absoluteEncoder;
+  private CANCoder absoluteEncoder;
 
   private boolean absoluteEncoderReversed;
   private double absoluteEncoderOffset;
@@ -33,23 +37,18 @@ public class SwerveModule extends SubsystemBase {
     int absoluteEncoderId, double absoluteEncoderOffset, boolean absoluteEncoderReversed) {
       this.absoluteEncoderOffset = absoluteEncoderOffset;
       this.absoluteEncoderReversed = absoluteEncoderReversed;
-      absoluteEncoder = new AnalogInput(absoluteEncoderId);
+      absoluteEncoder = new CANCoder(absoluteEncoderId);
 
-      driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+      driveMotor = new TalonFX(driveMotorId);
       turnMotor = new CANSparkMax(turnMotorId, MotorType.kBrushless);
 
       driveMotor.setInverted(driveMotorReversed);
       turnMotor.setInverted(turnMotorReversed);
 
-      driveEncoder = driveMotor.getEncoder();
+      driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
       turnEncoder = turnMotor.getEncoder();
 
-      driveEncoder.setPositionConversionFactor(Constants.SwerveConstants.DRIVE_MOTOR_PCONVERSION);
-      driveEncoder.setVelocityConversionFactor(Constants.SwerveConstants.DRIVE_MOTOR_VCONVERSION);
-      turnEncoder.setPositionConversionFactor(Constants.SwerveConstants.TURN_MOTOR_PCONVERSION);
-      turnEncoder.setVelocityConversionFactor(Constants.SwerveConstants.TURN_MOTOR_VCONVERSION);
-
-      turnPIDController = new PIDController(1, 0, 0);
+      turnPIDController = new PIDController(Constants.SwerveConstants.KP_TURNING, 0, 0);
       turnPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
       resetEncoders();
@@ -60,32 +59,43 @@ public class SwerveModule extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
+  public void setBrake(boolean brake){
+    if(brake){
+      driveMotor.setNeutralMode(NeutralMode.Brake);
+      turnMotor.setIdleMode(IdleMode.kCoast);
+    }
+    else{
+      driveMotor.setNeutralMode(NeutralMode.Coast);
+      turnMotor.setIdleMode(IdleMode.kCoast);
+    }
+  }
+
   public double getDriveMotorPosition(){
-    return driveEncoder.getPosition();
+    return driveMotor.getSelectedSensorPosition() * Constants.SwerveConstants.DRIVE_MOTOR_PCONVERSION;
   }
 
   public double getDriveMotorVelocity(){
-    return driveEncoder.getVelocity();
+    return driveMotor.getSelectedSensorVelocity() * Constants.SwerveConstants.DRIVE_MOTOR_VCONVERSION;
   }
 
   public double getTurnMotorPosition(){
-    return turnEncoder.getPosition();
+    return turnEncoder.getPosition() * Constants.SwerveConstants.TURN_MOTOR_PCONVERSION;
   }
 
   public double getTurnMotorVelocity(){
-    return turnEncoder.getVelocity();
+    return turnEncoder.getVelocity() * Constants.SwerveConstants.TURN_MOTOR_VCONVERSION;
   }
 
   public double getAbsoluteEncoderAngle(){
-    double angle = absoluteEncoder.getVoltage() / RobotController.getVoltage5V();
-    angle *= 2 * Math.PI;
+    double angle = absoluteEncoder.getAbsolutePosition();
     angle -= absoluteEncoderOffset;
+    angle *= (Math.PI / 180);
     return angle * (absoluteEncoderReversed ? -1.0 : 1.0);
   }
 
   public void resetEncoders(){
-    driveEncoder.setPosition(0);
-    turnEncoder.setPosition(getAbsoluteEncoderAngle());
+    driveMotor.setSelectedSensorPosition(0);
+    turnEncoder.setPosition(getAbsoluteEncoderAngle() / Constants.SwerveConstants.TURN_MOTOR_PCONVERSION);
   }
 
   public SwerveModuleState getState(){
@@ -98,13 +108,13 @@ public class SwerveModule extends SubsystemBase {
       return;
     }
     state = SwerveModuleState.optimize(state, getState().angle);
-    driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.DRIVETRAIN_MAX_SPEED);
+    driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.SwerveConstants.DRIVETRAIN_MAX_SPEED);
     turnMotor.set(turnPIDController.calculate(getTurnMotorPosition(), state.angle.getRadians()));
-    SmartDashboard.putString("Swerve[" + absoluteEncoder.getChannel() + "] State", state.toString());
+    SmartDashboard.putString("Swerve[" + driveMotor.getDeviceID() + "] State", state.toString());
   }
   
   public void stop(){
-    driveMotor.set(0);
+    driveMotor.set(ControlMode.PercentOutput, 0);
     turnMotor.set(0);
   }
 }
