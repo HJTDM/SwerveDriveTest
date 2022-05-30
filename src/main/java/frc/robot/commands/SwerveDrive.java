@@ -18,10 +18,10 @@ public class SwerveDrive extends CommandBase {
   /** Creates a new SwerveDrive. */
 
   private Drivetrain drivetrain = RobotContainer.drivetrain;
-  private double xSpeed, ySpeed, turnSpeed;
+  private double frontSpeed, sideSpeed, turnSpeed;
   private boolean fieldOriented;
-  private SlewRateLimiter xLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
-  private SlewRateLimiter yLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
+  private SlewRateLimiter frontLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
+  private SlewRateLimiter sideLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
   private SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.SwerveConstants.TELE_DRIVE_MAX_ANGULAR_ACCELERATION);
 
   public SwerveDrive() {
@@ -41,29 +41,29 @@ public class SwerveDrive extends CommandBase {
     // turnSpeed = RobotContainer.joystick.getRawAxis(2);
     // fieldOriented = !RobotContainer.joystick.getRawButton(3);
 
-    xSpeed = -RobotContainer.controller.getLeftY();
-    ySpeed = RobotContainer.controller.getLeftX();
+    frontSpeed = -RobotContainer.controller.getLeftY();
+    sideSpeed = RobotContainer.controller.getLeftX();
     turnSpeed = RobotContainer.controller.getRightX();
     fieldOriented = !RobotContainer.controller.getRawButton(XboxController.Button.kA.value);
 
-    SmartDashboard.putNumber("Xspeed", xSpeed);
-    SmartDashboard.putNumber("Yspeed", ySpeed);
-    SmartDashboard.putNumber("Turnspeed", turnSpeed);
+    SmartDashboard.putNumber("X Speed", frontSpeed);
+    SmartDashboard.putNumber("Y Speed", sideSpeed);
+    SmartDashboard.putNumber("Turn Speed", turnSpeed);
 
-    xSpeed = Math.abs(xSpeed) > 0.1 ? xSpeed : 0;
-    ySpeed = Math.abs(ySpeed) > 0.1 ? ySpeed : 0;
+    frontSpeed = Math.abs(frontSpeed) > 0.1 ? frontSpeed : 0;
+    sideSpeed = Math.abs(sideSpeed) > 0.1 ? sideSpeed : 0;
     turnSpeed = Math.abs(turnSpeed) > 0.1 ? turnSpeed : 0;
 
-    xSpeed = xLimiter.calculate(xSpeed) * Constants.SwerveConstants.TELE_DRIVE_MAX_SPEED;
-    ySpeed = yLimiter.calculate(ySpeed) * Constants.SwerveConstants.TELE_DRIVE_MAX_SPEED;
+    frontSpeed = frontLimiter.calculate(frontSpeed) * Constants.SwerveConstants.TELE_DRIVE_MAX_SPEED;
+    sideSpeed = sideLimiter.calculate(sideSpeed) * Constants.SwerveConstants.TELE_DRIVE_MAX_SPEED;
     turnSpeed = turnLimiter.calculate(turnSpeed) * Constants.SwerveConstants.TELE_DRIVE_MAX_ANGULAR_SPEED;
 
     ChassisSpeeds chassisSpeeds;
     if(fieldOriented){
-      chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed, drivetrain.getHeadingRotation2d());
+      chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(frontSpeed, sideSpeed, turnSpeed, drivetrain.getHeadingRotation2d());
     }
     else{
-      chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turnSpeed);
+      chassisSpeeds = new ChassisSpeeds(frontSpeed, sideSpeed, turnSpeed);
     }
 
     SwerveModuleState[] moduleStates = Constants.SwerveConstants.DRIVE_KINEMATICS.toSwerveModuleStates(chassisSpeeds);

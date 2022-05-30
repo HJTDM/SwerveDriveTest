@@ -30,8 +30,8 @@ public final class Constants {
         public static final double DRIVETRAIN_MAX_SPEED = 5.0;
         public static final double DRIVETRAIN_MAX_ANGULAR_SPEED = 2 * 2 * Math.PI;
 
-        public static final double TELE_DRIVE_MAX_SPEED = DRIVETRAIN_MAX_SPEED / 3.5;
-        public static final double TELE_DRIVE_MAX_ANGULAR_SPEED = DRIVETRAIN_MAX_ANGULAR_SPEED / 2.5;
+        public static final double TELE_DRIVE_MAX_SPEED = DRIVETRAIN_MAX_SPEED / 3;
+        public static final double TELE_DRIVE_MAX_ANGULAR_SPEED = DRIVETRAIN_MAX_ANGULAR_SPEED / 2.25;
         public static final double TELE_DRIVE_MAX_ACCELERATION = 3;
         public static final double TELE_DRIVE_MAX_ANGULAR_ACCELERATION = 3;
 

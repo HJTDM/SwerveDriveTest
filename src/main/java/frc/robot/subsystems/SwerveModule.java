@@ -102,7 +102,7 @@ public class SwerveModule extends SubsystemBase {
     return new SwerveModuleState(getDriveMotorVelocity(), new Rotation2d(getTurnMotorPosition()));
   }
 
-  public void setDesiredState(SwerveModuleState state){
+  public void setState(SwerveModuleState state){
     if(Math.abs(state.speedMetersPerSecond) < 0.001){
       stop();
       return;
@@ -110,7 +110,7 @@ public class SwerveModule extends SubsystemBase {
     state = SwerveModuleState.optimize(state, getState().angle);
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.SwerveConstants.DRIVETRAIN_MAX_SPEED);
     turnMotor.set(turnPIDController.calculate(getTurnMotorPosition(), state.angle.getRadians()));
-    SmartDashboard.putString("Swerve[" + driveMotor.getDeviceID() + "] State", state.toString());
+    SmartDashboard.putString("Swerve [" + driveMotor.getDeviceID() + "] State", state.toString());
   }
   
   public void stop(){
