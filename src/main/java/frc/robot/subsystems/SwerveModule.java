@@ -32,11 +32,13 @@ public class SwerveModule extends SubsystemBase {
 
   private boolean absoluteEncoderReversed;
   private double absoluteEncoderOffset;
+
   /** Creates a new SwerveModule. */
   public SwerveModule(int driveMotorId, int turnMotorId, boolean driveMotorReversed, boolean turnMotorReversed,
     int absoluteEncoderId, double absoluteEncoderOffset, boolean absoluteEncoderReversed) {
       this.absoluteEncoderOffset = absoluteEncoderOffset;
       this.absoluteEncoderReversed = absoluteEncoderReversed;
+
       absoluteEncoder = new CANCoder(absoluteEncoderId);
 
       driveMotor = new TalonFX(driveMotorId);
@@ -110,7 +112,7 @@ public class SwerveModule extends SubsystemBase {
     state = SwerveModuleState.optimize(state, getState().angle);
     driveMotor.set(ControlMode.PercentOutput, state.speedMetersPerSecond / Constants.SwerveConstants.DRIVETRAIN_MAX_SPEED);
     turnMotor.set(turnPIDController.calculate(getTurnMotorPosition(), state.angle.getRadians()));
-    SmartDashboard.putString("Swerve [" + driveMotor.getDeviceID() + "] State", state.toString());
+    SmartDashboard.putNumber("Swerve [" + driveMotor.getDeviceID() + "] Velocity", getDriveMotorVelocity());
   }
   
   public void stop(){

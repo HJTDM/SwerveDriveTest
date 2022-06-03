@@ -4,8 +4,10 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,7 +18,7 @@ public class Drivetrain extends SubsystemBase {
   private SwerveModule leftFront = new SwerveModule(
     1, 
     5, 
-    false, 
+    true, 
     false, 
     11, 
     212.7, 
@@ -50,6 +52,7 @@ public class Drivetrain extends SubsystemBase {
     false);
 
   private ADIS16470_IMU gyro = new ADIS16470_IMU();
+  private SwerveDriveOdometry odometry = new SwerveDriveOdometry(Constants.SwerveConstants.DRIVE_KINEMATICS, new Rotation2d(0));
 
   private static final Drivetrain drivetrain = new Drivetrain();
 
@@ -71,7 +74,17 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    odometry.update(getHeadingRotation2d(), leftFront.getState(), rightFront.getState(), leftBack.getState(), rightBack.getState());
     SmartDashboard.putNumber("Robot Angle", getHeading());
+    SmartDashboard.putString("Pose", getPose().toString());
+  }
+  
+  public Pose2d getPose(){
+    return odometry.getPoseMeters();
+  }
+
+  public void resetOdometry(Pose2d pose){
+    odometry.resetPosition(pose, getHeadingRotation2d());
   }
 
   public void setAllMode(boolean brake){
@@ -110,9 +123,9 @@ public class Drivetrain extends SubsystemBase {
 
   public void setModuleStates(SwerveModuleState[] moduleStates){
     SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, Constants.SwerveConstants.DRIVETRAIN_MAX_SPEED);
-    leftFront.setState(moduleStates[3]);
+    leftFront.setState(moduleStates[0]);
     rightFront.setState(moduleStates[1]);
     leftBack.setState(moduleStates[2]);
-    rightBack.setState(moduleStates[0]);
+    rightBack.setState(moduleStates[3]);
   }
 }
